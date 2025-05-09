@@ -38,12 +38,11 @@ def create_cave_system():
 
     for room, neighbors in connections.items():
         for neighbor in neighbors:
-            rooms[room].connect(rooms[neighbor])
-
+            if rooms[neighbor] not in rooms[room].tunnels:
+                rooms[room].connect(rooms[neighbor])
     return rooms
 
 # Scatter hazards around the cave
-
 def place_hazards(rooms):
     # Add pits
     for _ in range(2):
@@ -84,8 +83,20 @@ class Player:
             print("You can't shoot that way!")
         return None
 
-# Check for nearby hazards
+def give_hints(player):
+    # Check for nearby pits
+    if any(room.has_pit for room in player.current_room.tunnels):
+        print("You feel a cold breeze... something is definitely down there.")
+    
+    # Check for nearby bats
+    if any(room.has_bats for room in player.current_room.tunnels):
+        print("You hear the sound of frantic wings flapping in the darkness.")
+    
+    # Check for nearby Wumpus
+    if any(room.has_wumpus for room in player.current_room.tunnels):
+        print("You smell something awful... like Bryson Groves.")
 
+# Check for nearby hazards
 def check_for_hazards(player):
     if player.current_room.has_pit:
         print("You fell into a bottomless pit! GG's Game Over!")
@@ -99,7 +110,6 @@ def check_for_hazards(player):
     return True
 
 # Main game loop
-
 def main():
     rooms = create_cave_system()
     wumpus_room = place_hazards(rooms)
@@ -109,6 +119,7 @@ def main():
         print(f"\nYou are in Room {player.current_room.number}.")
         print(f"Connected rooms: {[r.number for r in player.current_room.tunnels]}")
         print(f"Arrows remaining: {player.arrows}")
+        give_hints(player)
 
         # Move or shoot
         action = input("Move or Shoot? (m/s): ").strip().lower()
