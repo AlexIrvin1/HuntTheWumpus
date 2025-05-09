@@ -12,11 +12,13 @@ class Room:
         self.has_wumpus = False
     
     def connect(self, other_room):
+        # Connect this room to another room (two-way connection)
         self.tunnels.append(other_room)
         other_room.tunnels.append(self)
 
+# Create the cave system
+
 def create_cave_system():
-    # Create all rooms
     rooms = {i: Room(i) for i in range(1, 13)}
 
     connections = {
@@ -40,6 +42,8 @@ def create_cave_system():
 
     return rooms
 
+# Scatter hazards around the cave
+
 def place_hazards(rooms):
     # Add pits
     for _ in range(2):
@@ -57,12 +61,30 @@ def place_hazards(rooms):
 class Player:
     def __init__(self, start_room):
         self.current_room = start_room
+        self.arrows = 3
 
     def move(self, target_room):
         if target_room in self.current_room.tunnels:
             self.current_room = target_room
         else:
             print("You can't move that way!")
+
+    def shoot_arrow(self, target_room, wumpus_room):
+        if target_room in self.current_room.tunnels:
+            self.arrows -= 1
+            if target_room == wumpus_room:
+                print("You hear a satisfying roar as your arrow hits the Wumpus! You win!")
+                return True  # Game over, Wumpus is defeated
+            else:
+                print("Your arrow echoes through the tunnels, but the Wumpus lives!")
+                if self.arrows == 0:
+                    print("You're out of arrows! Game Over!")
+                    return False  # Game over, no arrows left
+        else:
+            print("You can't shoot that way!")
+        return None
+
+# Check for nearby hazards
 
 def check_for_hazards(player):
     if player.current_room.has_pit:
@@ -76,6 +98,8 @@ def check_for_hazards(player):
         return False
     return True
 
+# Main game loop
+
 def main():
     rooms = create_cave_system()
     wumpus_room = place_hazards(rooms)
@@ -84,19 +108,38 @@ def main():
     while True:
         print(f"\nYou are in Room {player.current_room.number}.")
         print(f"Connected rooms: {[r.number for r in player.current_room.tunnels]}")
+        print(f"Arrows remaining: {player.arrows}")
 
-        # Move player
-        try:
-            target_number = int(input("Enter room number to move to: "))
-            target_room = rooms.get(target_number)
-            if target_room:
-                player.move(target_room)
-                if not check_for_hazards(player):
-                    break
-            else:
-                print("Invalid room number.")
-        except ValueError:
-            print("Please enter a valid room number.")
+        # Move or shoot
+        action = input("Move or Shoot? (m/s): ").strip().lower()
+        if action == 'm':
+            try:
+                target_number = int(input("Enter room number to move to: "))
+                target_room = rooms.get(target_number)
+                if target_room:
+                    player.move(target_room)
+                    if not check_for_hazards(player):
+                        break
+                else:
+                    print("Invalid room number.")
+            except ValueError:
+                print("Please enter a valid room number.")
+
+        elif action == 's':
+            try:
+                target_number = int(input("Enter room number to shoot into: "))
+                target_room = rooms.get(target_number)
+                if target_room:
+                    result = player.shoot_arrow(target_room, wumpus_room)
+                    if result is True or result is False:
+                        break
+                else:
+                    print("Invalid room number.")
+            except ValueError:
+                print("Please enter a valid room number.")
+
+        else:
+            print("Choose 'm' to move or 's' to shoot.")
 
 # Run the game
 main()
