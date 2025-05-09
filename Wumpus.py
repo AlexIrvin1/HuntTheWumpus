@@ -4,7 +4,7 @@
 import random
 
 class Room:
-    def __innit__(self, number):
+    def __init__(self, number):
         self.number = number
         self.tunnels = []
         self.has_pit = False
@@ -14,10 +14,10 @@ class Room:
     def connect(self, other_room):
         self.tunnels.append(other_room)
         other_room.tunnels.append(self)
-        
+
 def create_cave_system():
     # Create all rooms
-    rooms = {i: Room(i) for i in range(1, 21)}
+    rooms = {i: Room(i) for i in range(1, 13)}
 
     connections = {
         1: [3, 8, 11],
@@ -64,7 +64,7 @@ class Player:
         else:
             print("You can't move that way!")
 
-def checkHazards(player):
+def check_for_hazards(player):
     if player.current_room.has_pit:
         print("You fell into a bottomless pit! GG's Game Over!")
         return False
@@ -75,3 +75,28 @@ def checkHazards(player):
         print("You stumbled into the Wumpus's lair! Game Over!")
         return False
     return True
+
+def main():
+    rooms = create_cave_system()
+    wumpus_room = place_hazards(rooms)
+    player = Player(random.choice(list(rooms.values())))
+
+    while True:
+        print(f"\nYou are in Room {player.current_room.number}.")
+        print(f"Connected rooms: {[r.number for r in player.current_room.tunnels]}")
+
+        # Move player
+        try:
+            target_number = int(input("Enter room number to move to: "))
+            target_room = rooms.get(target_number)
+            if target_room:
+                player.move(target_room)
+                if not check_for_hazards(player):
+                    break
+            else:
+                print("Invalid room number.")
+        except ValueError:
+            print("Please enter a valid room number.")
+
+# Run the game
+main()
