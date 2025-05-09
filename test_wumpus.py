@@ -1,8 +1,8 @@
 # Alex Irvin
-# Wumous Test
+# Wumpus Test
 
 import unittest
-from wumpus import Room, create_cave_system, place_hazards, Player
+from Wumpus import Room, create_cave_system, place_hazards, Player
 
 class TestHuntTheWumpus(unittest.TestCase):
 
